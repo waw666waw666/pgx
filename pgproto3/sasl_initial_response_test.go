@@ -34,14 +34,20 @@ func TestSASLInitialResponseDecodeValid(t *testing.T) {
 func TestSASLInitialResponseDecodeNoInitialResponse(t *testing.T) {
 	t.Parallel()
 
-	// A declared length of -1 means the mechanism sends no initial
-	// response. The message must end immediately after the length field
-	// and Data must be empty.
 	var msg pgproto3.SASLInitialResponse
 	err := msg.Decode(saslInitialResponseSrc(-1, nil))
 	require.NoError(t, err)
 	require.Equal(t, "SCRAM-SHA-256", msg.AuthMechanism)
-	require.Empty(t, msg.Data)
+	require.Nil(t, msg.Data)
+}
+
+func TestSASLInitialResponseDecodeEmptyInitialResponse(t *testing.T) {
+	t.Parallel()
+
+	var msg pgproto3.SASLInitialResponse
+	err := msg.Decode(saslInitialResponseSrc(0, nil))
+	require.NoError(t, err)
+	require.Equal(t, []byte{}, msg.Data)
 }
 
 func TestSASLInitialResponseDecodeLengthMismatch(t *testing.T) {
